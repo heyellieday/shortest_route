@@ -1,15 +1,24 @@
 #This "city" is a 100x100 grid.
 #It takes 1 mins to travel from one point to another point.
+class Integer
+  def factorial
+    (1..self).reduce(:*) || 1
+  end
+end
 
 
 class ShortestRoute
 	
 	def initialize(coordinates_array, time, start_coordinates)
+
+		@@number_of_routes = coordinates_array.length.factorial
+
 		@@search_state = 0
 		@@route_state = 0
 		@@past_routes_state = 0
 
 		@@coordinates_array = coordinates_array
+		@@coordinates_compare = coordinates_array
 		@time = time
 		@start_coordinates = start_coordinates
 
@@ -30,8 +39,20 @@ class ShortestRoute
 		return @@coordinates_array
 	end
 
+	def unique_routes(a)
+		if a.uniq.length == a.length
+		  puts "a does not contain duplicates"
+		else
+		  puts "a does contain duplicates"
+		end
+	end
+
 	def routes
 		@@routes
+	end
+
+	def number_of_routes
+		print @@routes.length
 	end
 
 	def find_distances
@@ -56,25 +77,39 @@ class ShortestRoute
 	
 
 	def do_route
-		if @@route_state == 8
-			@@routes.push(@@current_route)
+
+		if @@routes.length == 100
+			return @@routes
+		end
+		if @@routes.length > 0
+			index = @@routes[@@search_state].index(@@coordinates_compare[@@route_state])
+			if index != nil
+				swap = @@coordinates_array.delete_at(index)
+				@@coordinates_array.push(swap)
+			end
+		end
+
+		if @@route_state == @@coordinates_array.length
+			index = @@routes.index(@@current_route)
+			if index != nil
+				@@current_route = []
+				@@route_state = 0
+				@@search_state += 1
+			else
+				@@routes.push(@@current_route)
+				@@current_route = []
+				@@route_state = 0
+			end
+
 			@@current_route = []
 			@@route_state = 0
 		end
-		if @@search_state == 8
-			return @@routes
+		if @@search_state == @@coordinates_array.length
+			@@routes.length
+			@@search_state = 0
 		end
-
-		if @@routes.length > 0
-			 #puts @@coordinates_array[@@search_state][:distances][@@route_state]
-			index = @@routes[@@search_state].index(@@coordinates_array[@@search_state][:distances][@@route_state])
-			puts index
-			swap = @@coordinates_array[@@search_state][:distances].delete_at(index)
-			puts swap
-			@@coordinates_array[@@search_state][:distances].push(swap)
-		end
-
-		@@current_route.push(@@coordinates_array[@@search_state][:distances][@@route_state])
+		puts @@search_state
+		@@current_route.push(@@coordinates_compare[@@route_state])
 		@@route_state  += 1
 		do_route
 
@@ -102,7 +137,7 @@ coordinates_array = [
 	{x: 30, y: 65, distances: [], visited: false},
 	{x: 20, y: 20, distances: [], visited: false},
 	{x: 71, y: 11, distances: [], visited: false},
-	{x: 60, y: 33, distances: [], visited: false}
+	{x: 60, y: 33, distances: [], visited: false},
 ]
 
 #time in 15 minute blocks
@@ -111,6 +146,7 @@ start_coordinates = {x: 1, y: 3}
 
 shortest_route = ShortestRoute.new(coordinates_array, time, start_coordinates)
 routes = shortest_route.find_all_routes
-print shortest_route.routes
+shortest_route.unique_routes(shortest_route.routes)
+shortest_route.number_of_routes
 
 
