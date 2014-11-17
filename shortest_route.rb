@@ -5,77 +5,89 @@
 class ShortestRoute
 	
 	def initialize(coordinates_array, time, start_coordinates)
-		@coordinates_array = coordinates_array
+		@@search_state = 0
+		@@route_state = 0
+		@@past_routes_state = 0
+
+		@@coordinates_array = coordinates_array
 		@time = time
 		@start_coordinates = start_coordinates
-		@grid = Array.new(100){ |i| 
-			i = Array.new(100){ |i|
-			 i = "x"
-			} 
-		}
-		@shortest_route = []
+
+		@@routes = []
+		@@current_route = []
+		@@shortest_route = nil
+
 		if (time % 15 != 0) 
 			puts "Please enter a valid time."
 			return
 		end
+
 		find_distances
 
 	end
 
 	def coordinates_array
-		return @coordinates_array
+		return @@coordinates_array
+	end
+
+	def routes
+		@@routes
 	end
 
 	def find_distances
-		@coordinates_array.each_with_index do |coordinates, index|
+		@@coordinates_array.each_with_index do |coordinates, index|
 
-			@coordinates_array.each_with_index do |coordinates_compare, index_compare|
+			@@coordinates_array.each_with_index do |coordinates_compare, index_compare|
 
 				#distance between
 				if (index != index_compare)
 					a = coordinates[:x] - coordinates_compare[:x]
 					b = coordinates[:y] - coordinates_compare[:y]
 					distance = Math.sqrt((a*a) + (b*b)).floor
-					@coordinates_array[index][:distances].push({
+					@@coordinates_array[index][:distances].push({
 						x: coordinates_compare[:x],
 						y: coordinates_compare[:y],
-						distance: distance,
-						visited: false})
-						puts distance
+						distance: distance})
 
 				end
-
 			end
-
-			@grid[coordinates[:x]][coordinates[:y]] = "coordinates:  #{coordinates[:x]}, #{coordinates[:y]}"
 		end
 	end
 	
 
-	def calculate_shortest_route(coordinates_array, state)
-		if (@coordinates_array[state][:visited] == false )
-			#shortest routes
-			if (index != index_compare)
-				shortest_route = nil
-				@coordinates_array[index][:distances].each_with_index do |distance, index_distance|
-					if shortest_distance == nil
-						shortest_distance = 1000
-					end
-					if (shortest_distance >= distance[:distance] && distance[:visited] == false )
-						shortest_distance = distance[:distance]
-						@coordinates_array[index][:distances][index_distance][:visited] = true
-						@coordinates_array[index_distance][:visited] = true
-						shortest_routes.push(shortest_distance)
-					end
-				end
-			end
+	def do_route
+		if @@route_state == 8
+			@@routes.push(@@current_route)
+			@@current_route = []
+			@@route_state = 0
 		end
-		state.next
-		if state == 5 
-		 return
+		if @@search_state == 8
+			return @@routes
 		end
-		calculate_shortest_distance(@coordinates_array)
-		print shortest_distance
+
+		if @@routes.length > 0
+			 #puts @@coordinates_array[@@search_state][:distances][@@route_state]
+			index = @@routes[@@search_state].index(@@coordinates_array[@@search_state][:distances][@@route_state])
+			puts index
+			swap = @@coordinates_array[@@search_state][:distances].delete_at(index)
+			puts swap
+			@@coordinates_array[@@search_state][:distances].push(swap)
+		end
+
+		@@current_route.push(@@coordinates_array[@@search_state][:distances][@@route_state])
+		@@route_state  += 1
+		do_route
+
+
+	end
+
+	def find_all_routes
+		routes = do_route
+		return routes
+	end
+
+	def determine_shortest_route
+
 	end
 end
 
@@ -98,5 +110,7 @@ time = 120
 start_coordinates = {x: 1, y: 3}
 
 shortest_route = ShortestRoute.new(coordinates_array, time, start_coordinates)
-shortest_route.calculate_shortest_route(shortest_route.coordinates_array, 0)
+routes = shortest_route.find_all_routes
+print shortest_route.routes
+
 
